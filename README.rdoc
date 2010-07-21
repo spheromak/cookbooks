@@ -1,0 +1,7 @@
+== OHAI
+
+   some of the cookbooks i get to write 
+
+   most things are server centric and  data heavy.  
+
+   databags and  search are your friend.
