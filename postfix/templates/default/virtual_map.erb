@@ -1,0 +1,6 @@
+<% @node[:postfix][:virtual].sort.each do |k,junk| %>
+<%= k %>  VIRT
+<% @node[:postfix][:virtual][k].sort.each do |v| %>
+<%= v %>
+<% end 
+end %>

@@ -1,0 +1,144 @@
+= DESCRIPTION:
+manage postfix in extreemly attribute driven way
+
+This cbook also manges multi-instance postfix 
+
+Also enables a memfs for ques via the  "memqueue" attrib
+
+
+= REQUIREMENTS:
+
+DATABAGS! 
+
+you will need a databag for network configuration if you intend to use multi-instance support 
+you can easily extend the naming ni the recipie. maybe one day i will abstract it.
+
+example network databag
+$ kdb show network somehost
+{
+  "routes": {
+    "default": {
+      "device": "eth1",
+      "network": "0.0.0.0/0",
+      "gateway": "127.0.121.1"
+    }
+  },
+  "id": "sfpfm01",
+  "00note": "sysmail / fastmail names matter to the postfix recipes. names don't matter otherwise",
+  "interfaces": {
+    "fastmail": {
+      "mask": "255.255.255.128",
+      "ip": "127.33.86.3",
+      "dev": "eth0"
+    },
+    "sysmail-ext": {
+      "mask": "255.255.255.224",
+      "ip": "127.0.121.16",
+      "dev": "eth1:0"
+    },
+    "sysmail": {
+      "mask": "255.255.255.128",
+      "ip": "127.33.86.2",
+      "dev": "eth0:0"
+    },
+    "fastmail-ext": {
+      "mask": "255.255.255.224",
+      "ip": "127.0.121.11",
+      "dev": "eth1"
+    }
+  }
+}
+
+
+
+
+= ATTRIBUTES: 
+
+all attribs under  postfix.conf  are considered postfix key-value config options
+
+multi-instance attributes are merged with base-config destructively 
+
+postfix.conf.myhostmane = foo
+postfix.mult.postfix-fastmail.conf.myhostname = bar    
+would express as myhostname = bar  in the main.cf
+
+there are transports and canonical maps support for base instance as well as mult-iinstance 
+
+= USAGE:
+
+I drive all of this cookbook from a role for the most part
+
+example roll for multi-instance:
+
+name "mail_fastmail"
+description "Multi-instance posfix role"
+recipes "postfix::multi"
+
+default_attributes "postfix" => {
+  #
+  # fastmail defaults these settings will merge into mult-instance settings
+  # multi-instance settings take precedence. 
+  # 
+  "multi" => {
+    "postfix-fastmail" => {
+      "conf"         =>{ 
+         "transport_maps"=> "hash:/etc/postfix-fastmail/transport",
+         "multi_instance_enable" => "yes",
+         "multi_instance_wrapper" => nil,
+         "master_service_disable"     => nil,
+         "relayhost" => nil, 
+         "smtpd_client_connection_count_limit" => "0",
+         "relay_domains"   => "foo.com",
+         "relay_transport" => "relay",
+         "fallback_relay"  => "fallback.foo.com",
+         "smtpd_client_event_limit_exceptions" => "$mynetworks",
+         "mydomain" => "foo.com",
+       },
+      "transports"   => {
+         "att.net"       => " att:",
+         "bellsouth.net" => "deadbeats:",  
+         ".bellsouth.net"=> "deadbeats:",
+         ".hotmail.com"  => "deadbeats:",
+         ".msn.com"      => "deadbeats:",
+         "hotmail.com"   => "deadbeats:",
+         "relay"         => ":[mh.foo.com]",
+         "msn.com"       => "deadbeats:",
+         "yahoo.com"     => "deadbeats:",
+         ".yahoo.com"    => "deadbeats:"
+      },
+      "canonical"    => {}
+    },
+    "postfix-sysmail"  => {
+      "conf"         => {
+        # this is the required minimum set for an instance
+        "multi_instance_enable"  => "yes",
+        "multi_instance_wrapper" => nil,
+        "master_service_disable" => nil,
+        "mydomain" => "foo.com",
+        "relayhost" => nil, 
+        "transport_maps"=> "hash:/etc/postfix-sysmail/transport",
+      },
+      "transports"   => {},
+      "canonical"    => {}
+    }
+  },
+  "transports" => { 
+    "foo.com"           => ":[intake.foo.com]",
+  },
+  "conf" => {
+    "multi_instance_enable"    => "yes",
+    "multi_instance_wrapper"   => "/usr/sbin/postmulti -p --",
+    "bounce_queue_lifetime"    => "10m",
+    "ignore_mx_lookup_error"   => "yes",
+    "smtp_randomize_addresses" => "yes",
+    "maximal_queue_lifetime"   => "5h",
+    "hash_queue_depth"         => 3,
+    "hash_queue_names"         => "incoming, active, deferred, defer, bounce, flush",
+    "mynetworks"               => '127.30.3.0/24, 127.33.64.0/18',
+    "soft_bounce"              => "no",
+    "alias_maps"               => "hash:/etc/aliases",
+    "unknown_local_recipient_reject_code"   => 550,
+  }
+}
+
+
