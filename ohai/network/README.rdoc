@@ -1,0 +1,38 @@
+= DESCRIPTION:
+
+manage system networking setup from data bags 
+
+only works on redhat and  derivitives 
+
+= REQUIREMENTS:
+databags!
+
+
+= ATTRIBUTES: 
+
+= USAGE:
+create a databag item  in network data bag with a hash of hashes per interface
+ex: 
+
+ "interfaces": {
+    "fastmail-sys-ext": {
+      "int": "lo",
+      "mask": "255.255.255.0",
+      "ip": "127.0.1.4"
+    },
+    "fastmail": {
+      "int": "lo",
+      "mask": "255.255.255.0",
+      "ip": "127.0.0.3"
+    },
+    "fastmail-ext": {
+      "int": "lo",
+      "mask": "255.255.255.0",
+      "ip": "127.0.1.3"
+    },
+    "fastmail-sys": {
+      "int": "lo",
+      "mask": "255.255.255.0",
+      "ip": "127.0.0.4"
+    }
+
