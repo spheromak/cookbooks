@@ -2,7 +2,10 @@
 
 manage system networking setup from data bags 
 
+also manages routes
+
 only works on redhat and  derivitives 
+
 
 = REQUIREMENTS:
 databags!
@@ -34,5 +37,12 @@ ex:
       "int": "lo",
       "mask": "255.255.255.0",
       "ip": "127.0.0.4"
+    },
+    "routes": {
+      "default": {
+        "network": "0.0.0.0",
+        "gateway": "127.0.86.1"
     }
+  }
+
 
