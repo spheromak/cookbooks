@@ -1,8 +1,6 @@
 # Plugin to pull sysctl data 
 provides 'sysctl'
 
-
-
 sysctl Mash.new
 
 # platform detection should go here

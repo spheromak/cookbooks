@@ -45,6 +45,7 @@ def xe_get_vm_params(uuid)
       k = $1.strip
       v = $2.strip
       v=v.split(/;/) if v.match(/;/)
+      v.each { |i| i.strip!}
       puts "k-> #{k}" if @xe_debug
       h[k] =  v
       h.rehash
