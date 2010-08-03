@@ -13,7 +13,7 @@ status, stdout, stderr = run_command(:command => cmd)
 return "" if stdout.nil? || stdout.empty?
 stdout.each do |line|
   line.chomp  
-  k,v = line.strip.split(/=/) 
-  sysctl[k] = v
+  k,v = line.split(/=/) 
+  sysctl[k.strip!] = v.strip!
 end
 
