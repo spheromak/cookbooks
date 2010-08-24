@@ -1,0 +1,11 @@
+= DESCRIPTION:
+Install confluence 
+confluence::libs  sets up the confluence chef libs for wiki integration
+
+= REQUIREMENTS:
+
+= ATTRIBUTES: 
+
+= USAGE:
+
+= Methods

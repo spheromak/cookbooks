@@ -1,0 +1,39 @@
+{
+  "attributes": {
+
+  },
+  "conflicting": {
+
+  },
+  "license": "Apache 2.0",
+  "providing": {
+
+  },
+  "recipes": {
+
+  },
+  "dependencies": {
+
+  },
+  "maintainer": "Jesse Nelson",
+  "replacing": {
+
+  },
+  "name": "inventory",
+  "platforms": {
+
+  },
+  "maintainer_email": "spheormak@gmail.com",
+  "description": "Installs/Configures system inventory wiki synchronization",
+  "version": "0.1.0",
+  "groupings": {
+
+  },
+  "long_description": "= DESCRIPTION:\nPulls data from attribute searches and  stores it in formated wiki page(s) \n\n= REQUIREMENTS:\n\n= ATTRIBUTES: \n\n= USAGE:\n\n",
+  "recommendations": {
+
+  },
+  "suggestions": {
+
+  }
+}

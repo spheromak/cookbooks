@@ -1,0 +1,39 @@
+{
+  "attributes": {
+
+  },
+  "conflicting": {
+
+  },
+  "license": "Apache 2.0",
+  "providing": {
+
+  },
+  "recipes": {
+
+  },
+  "dependencies": {
+
+  },
+  "maintainer": "Jesse Nelson",
+  "replacing": {
+
+  },
+  "name": "confluence",
+  "platforms": {
+
+  },
+  "maintainer_email": "spheromak@gmail.com",
+  "description": "Installs/Configures confluence",
+  "version": "0.1.0",
+  "groupings": {
+
+  },
+  "long_description": "= DESCRIPTION:\nInstall confluence \nconfluence::libs  sets up the confluence chef libs for wiki integration\n\n= REQUIREMENTS:\n\n= ATTRIBUTES: \n\n= USAGE:\n\n= Methods\n",
+  "recommendations": {
+
+  },
+  "suggestions": {
+
+  }
+}
