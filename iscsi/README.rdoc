@@ -1,0 +1,53 @@
+= DESCRIPTION:
+ iscsi initiator  provider and example recipe. This only works with Open-iscsi on Linux.
+    
+
+= REQUIREMENTS:
+ * Open-Iscsi 
+
+= Required options:
+* host    FQDN or Ip of the host that is serving the targets
+
+= Other options:
+* user    CHAP username  (on the target only) set initiator and 2way auth options with opt.  
+* pass    CHAP password  
+* opt     An array of key,value pairs where the key is an iscsi session attrib. (see example below)
+
+= Actions
+Default:
+* :login   Login to the target
+
+Supported
+* :login    Login to target with supplied options
+* :logout   Logout from target
+* :scan     Scan host for targets using SendTargets (not curently supporting isns and SLP)
+* :rescan   Rescan targets on host 
+* :auto     Setup the target for autologin
+* :remove   Logout and delete all records of this target
+
+= Example USAGE:
+
+Sets up a target as the name of the resource. and sets it to autologin:
+
+iscsi 'iqn.1992-04.com.emc:cx.fnm00102211253.a0' do
+  action [ :login, :auto ]
+  host 'sfpemc-a0.f00bar.com'
+  opt [ ["node.session.queue_depth", "32"], 
+        ["node.session.err_timeo.abort_timeout", "20"],
+        ["node.session.err_timeo.lu_reset_timeout", "45"]
+      ]
+end 
+
+
+Minimalist:
+
+iscsi 'mytarget' do 
+  host 'iscsitarget.mydom.com'
+end
+
+
+
+= TODO
+* make opt be a freekin hash 
+* support other discovery methods
+
