@@ -1,6 +1,4 @@
-# Author:: Jesse Nelson <spheromak@gmail.com>
-#
-#
+
 class Chef
   class Resource
     class Wiki < Chef::Resource
@@ -16,6 +14,7 @@ class Chef
         @page_id = nil
         @content = nil
         @version = nil
+        @parent_id = nil
         @url = nil
         @allowed_actions.push(:write)
       end
@@ -44,6 +43,10 @@ class Chef
         set_or_return( :space, arg, :kind_of => [ String ])
       end
 
+      def parent_id(arg=nil)
+        set_or_return( :parent_id, arg, :kind_of => [ String ])
+      end
+      
       def url(arg=nil)
         set_or_return( :url, arg, :kind_of => [ String ])
       end
@@ -64,7 +67,10 @@ class Chef
         @wiki = Confluence::Server.new(@new_resource.url)   
         @wiki.login(@new_resource.user, @new_resource.pass)
         page = @wiki.getPage(@new_resource.page_id)
+
+        @new_resource.parent_id  page['parentId'] unless @new_resource.parent_id
         @new_resource.version page['version']
+
         @current_resource.title   page['title']
         @current_resource.version page['version']
         @current_resource.content page['content']
@@ -78,12 +84,14 @@ class Chef
                       space: #{@new_resource.space}
                       title: #{@new_resource.title}
                     page_id: #{@new_resource.page_id}
+                  parent_id: #{@new_resource.parent_id}
                     version: #{@new_resource.version} ")
 
-        @wiki.storePage( {
+        @wiki.storePage({
           "space"   => @new_resource.space,
           "title"   => @new_resource.title,
           "id"      => @new_resource.page_id,
+          "parentId"=> @new_resource.parent_id,
           "version" => @new_resource.version,
           "content" => @new_resource.content 
         }) 

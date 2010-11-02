@@ -1,11 +1,26 @@
-= DESCRIPTION:
-Install confluence 
+= Description:
+Install confluence And setup a wiki provider for chef
 confluence::libs  sets up the confluence chef libs for wiki integration
 
-= REQUIREMENTS:
+= Provider Options:
+action::  currently only supports :write  which is also the default
+user::  Confluence wiki user name (required)
+pass::  Confluence wiki password  (required)
+url::  Url to your confluence wiki (required)
+space::  Conflucence space this page should be in 
+page_id:: The page id you wan to write (required)
+content:: Content to put on that wiki page
 
-= ATTRIBUTES: 
+= Usage:
+Simple usage would be 
+  wiki "Example Page" do
+    content "Testing out the provider"
+    page_id "123456"
+    url  "http://wiki.mydom.com"
+    user "someuser"
+    pass "somepass"
+    space "somespace"
+  end
 
-= USAGE:
-
-= Methods
+= Author:
+Jesse Nelson <spheromak@gmail.com>
