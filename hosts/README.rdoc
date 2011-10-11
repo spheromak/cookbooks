@@ -1,0 +1,28 @@
+= DESCRIPTION:
+Hosts file LWRP
+Manages individual entries in /etc/hosts without effecting other entries
+
+
+= REQUIREMENTS:
+Unix platform with /etc/hosts file
+
+
+= Resources/Providers
+hosts::
+
+== Actions
+* :create 
+  Add / Create entry in the host file
+* :remove 
+  Remove entry from the hosts file
+
+== Parameters
+
+* ip   The IPV4 adress for this entry (defaults to name)
+* entries  The list of entries for this ip.
+* force Force the action even reguardless if entries match.  I.e. only match ip and force the new requested state 
+
+
+== Examples
+
+See the example.rb  recipe for examples
