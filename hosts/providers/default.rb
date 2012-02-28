@@ -42,7 +42,7 @@ end
 
 def cast_entries
   if @new_resource.entries.class == String
-    @new_resource.entries.class
+    @new_resource.entries
   else
     @new_resource.entries.join(" ")
   end
