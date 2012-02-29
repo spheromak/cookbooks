@@ -1,1 +1,1 @@
-default[:sysctl] ||= []
+default[:sysctl] ||= {}
