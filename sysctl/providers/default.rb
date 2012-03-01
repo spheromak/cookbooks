@@ -7,9 +7,9 @@
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #     http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -27,18 +27,11 @@ def initialize(*args)
     Command.handle_command_failures(status, "STDOUT: #{output}\nSTDERR: #{error_message}")
   end
 
-  # setup a config file
-  @config_file = file "/etc/sysconfig" do
-    action :nothing
-    owner "root"
-    group "root"
-  end
-
   @sysctl = output.chomp
 end
 
 # sysctl -n -e  only works on linux  (-e at least is missing on mac)
-# side effect is that these calls will always try to set/write on other platforms. 
+# side effect is that these calls will always try to set/write on other platforms.
 # This is ok for now, but prob need to do detection at some point.
 # TODO: Make this work on other platforms better
 def load_current_resource
@@ -46,10 +39,10 @@ def load_current_resource
   @sysctl_args = case node.os
   when "GNU/Linux","Linux","linux"
     "-n -e"
-  else 
+  else
     "-n"
   end
-  
+
   # clean up value whitespace when its a string
   @new_resource.value.strip!  if @new_resource.value.class == String
 
@@ -73,16 +66,52 @@ action :set do
   end
 end
 
-action :write do 
-  entries = "# content managed by chef local changes will be overwritten"
+def write_config
+  if node.run_state[:sysctl_collected]
+    Chef::Log.debug "Already generated /etc/sysctl.conf"
+    return
+  end
+
+  entries = "#\n# content managed by chef local changes will be overwritten\n#\n"
+  r = Hash.new
   # walk the collecton
   run_context.resource_collection.each do |resource|
     if resource.is_a? Chef::Resource::Sysctl
-      entries << "#{resource.name} = '#{resource.value}" if resource.action.include?(:write)
+      # using a hash to ensure uniqueness. We want to make sure that
+      # dupes always take the last called setting. Enabling multipe redefines
+      # but only resolving to a single setting in the config
+      if resource.action.include?(:write)
+        # make sure we don't honor the [ :write, :remove ] 
+        r[resource.name] = "'#{resource.value}'\n" if resource.action.include?(:write)
+        r.delete(resource.name) if resource.action.include?(:remove)
+        resource.updated_by_last_action  true
+      end
     end
   end
+  # flatten entries
+  entries << r.sort.map { |k,v| "#{k} = #{v}" }.join
 
-  @config_file.content = entries
-  Chef::Log.info @config_file.inspect 
+  # clobber config
+  file "/etc/sysctl.conf" do
+    action :create
+    owner "root"
+    group "root"
+    content entries
+  end
+
+  node.run_state[:sysctl_collected] = true
+  @new_resource.updated_by_last_action  true
 end
 
+action :write do
+  write_config
+end
+
+action :remove do 
+  write_config
+
+  if node[:sysctl].has_key?(@new_resource.name) 
+    node[:sysctl].delete(@new_resource.name)
+    @new_resource.updated_by_last_action  true
+  end
+end
