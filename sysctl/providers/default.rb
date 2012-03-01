@@ -26,6 +26,7 @@ def initialize(*args)
     Chef::Log.info "Failed to locate sysctl on this system: STDERR: #{error_message}"
     Command.handle_command_failures(status, "STDOUT: #{output}\nSTDERR: #{error_message}")
   end
+  
 
   @sysctl = output.chomp
 end
@@ -52,66 +53,58 @@ def load_current_resource
 
 end
 
+# save to node obj if we were asked to
+def save_to_node
+  node.sysctl["#{@new_resource.name}"]  = @new_resource.value if @new_resource.save == true
+end
+
+# ensure running state
 action :set do
   # heavy handed type enforcement only wnat to write if they are different  ignore inner whitespace
   if @current_value.to_s.strip.split != @new_resource.value.to_s.strip.split
     # run it
     run_command( { :command => "#{@sysctl} #{@sysctl_args} -w #{@new_resource.name}='#{@new_resource.value}'" }  )
-
-    # save to node obj if we were asked to
-    node.sysctl["#{@new_resource.name}"]  = @new_resource.value if @new_resource.save == true
-
+    save_to_node
     # let chef know its done
     @new_resource.updated_by_last_action  true
   end
 end
 
-def write_config
-  if node.run_state[:sysctl_collected]
-    Chef::Log.debug "Already generated /etc/sysctl.conf"
-    return
+
+# write out a config file
+action :write do
+  @config  = file "/etc/sysctl.conf" do
+    action :nothing
+    owner "root"
+    group "root"
+    mode "0644"
   end
 
   entries = "#\n# content managed by chef local changes will be overwritten\n#\n"
-  r = Hash.new
-  # walk the collecton
+  r = Hash.new 
+
+  # walk & gather on the collecton
   run_context.resource_collection.each do |resource|
     if resource.is_a? Chef::Resource::Sysctl
       # using a hash to ensure uniqueness. We want to make sure that
       # dupes always take the last called setting. Enabling multipe redefines
       # but only resolving to a single setting in the config
-      if resource.action.include?(:write)
-        # make sure we don't honor the [ :write, :remove ] 
-        r[resource.name] = "'#{resource.value}'\n" if resource.action.include?(:write)
-        r.delete(resource.name) if resource.action.include?(:remove)
-        resource.updated_by_last_action  true
-      end
+      # NOTE: I am assuming the collection is in order seen.
+      r[resource.name] = "'#{resource.value}'\n" if resource.action.include?(:write)
+      resource.updated_by_last_action true # kinda a cludge, but oh well 
     end
   end
+  
   # flatten entries
-  entries << r.sort.map { |k,v| "#{k} = #{v}" }.join
+  entries << r.sort.map { |k,v| "#{k}=#{v}" }.join
 
-  # clobber config
-  file "/etc/sysctl.conf" do
-    action :create
-    owner "root"
-    group "root"
-    content entries
-  end
+  # put those in the config file
+  @config.content entries
 
-  node.run_state[:sysctl_collected] = true
-  @new_resource.updated_by_last_action  true
+  # tell the config to build itself latter
+  @new_resource.notifies  :create, @new_resource.resources(:file =>"/etc/sysctl.conf") 
+  
+  save_to_node
 end
 
-action :write do
-  write_config
-end
 
-action :remove do 
-  write_config
-
-  if node[:sysctl].has_key?(@new_resource.name) 
-    node[:sysctl].delete(@new_resource.name)
-    @new_resource.updated_by_last_action  true
-  end
-end
