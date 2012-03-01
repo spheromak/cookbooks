@@ -27,6 +27,13 @@ def initialize(*args)
     Command.handle_command_failures(status, "STDOUT: #{output}\nSTDERR: #{error_message}")
   end
 
+  # setup a config file
+  @config_file = file "/etc/sysconfig" do
+    action :nothing
+    owner "root"
+    group "root"
+  end
+
   @sysctl = output.chomp
 end
 
@@ -53,14 +60,10 @@ def load_current_resource
 end
 
 action :set do
-
   # heavy handed type enforcement only wnat to write if they are different  ignore inner whitespace
   if @current_value.to_s.strip.split != @new_resource.value.to_s.strip.split
-    # enable writing out 
-    @sysctl_args += " -w" if @new_resource.save == true    
-
     # run it
-    run_command( { :command => "#{@sysctl} #{@sysctl_args} #{@new_resource.name}='#{@new_resource.value}'" }  )
+    run_command( { :command => "#{@sysctl} #{@sysctl_args} -w #{@new_resource.name}='#{@new_resource.value}'" }  )
 
     # save to node obj if we were asked to
     node.sysctl["#{@new_resource.name}"]  = @new_resource.value if @new_resource.save == true
@@ -69,3 +72,17 @@ action :set do
     @new_resource.updated_by_last_action  true
   end
 end
+
+action :write do 
+  entries = "# content managed by chef local changes will be overwritten"
+  # walk the collecton
+  run_context.resource_collection.each do |resource|
+    if resource.is_a? Chef::Resource::Sysctl
+      entries << "#{resource.name} = '#{resource.value}" if resource.action.include?(:write)
+    end
+  end
+
+  @config_file.content = entries
+  Chef::Log.info @config_file.inspect 
+end
+
