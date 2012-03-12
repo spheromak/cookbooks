@@ -53,18 +53,16 @@ def load_current_resource
 end
 
 action :set do
-
   # heavy handed type enforcement only wnat to write if they are different  ignore inner whitespace
   if @current_value.to_s.strip.split != @new_resource.value.to_s.strip.split
-    # enable writing out 
-    @sysctl_args += " -w" if @new_resource.save == true    
-
     # run it
-    run_command( { :command => "#{@sysctl} #{@sysctl_args} #{@new_resource.name}='#{@new_resource.value}'" }  )
+    run_command( { :command => "#{@sysctl} #{@sysctl_args} -w #{@new_resource.name}='#{@new_resource.value}'" }  )
 
     # save to node obj if we were asked to
     node.sysctl["#{@new_resource.name}"]  = @new_resource.value if @new_resource.save == true
 
+    # write it to sysctl.conf if were asked too 
+    self.notifies :create, "sysctl_write", :delayed
     # let chef know its done
     @new_resource.updated_by_last_action  true
   end

@@ -11,12 +11,13 @@ Sysctl LWRP
 ===========
 Properties
 ----------
-* __name__:  The key name. Defaults to the resource name  i.e. sysctl 
-* __value__:  what to set this key to
+* __name__:  The key name. Defaults to the resource name  i.e. sysctl "somevalue"
+* __value__:  what to set this keys value too
+* __save__:  save the seting ala "sysctl -w"   Default: true
 
 Known Bugs 
 ----------
-* This provider will always write out on any platform thats not mac/linux. Only really tested on Linux/OSX/Solaris.
+* This provider will always write out on any platform thats not linux. Only really tested on Linux/OSX/Solaris.
 
 Example Usage 
 =============
@@ -26,6 +27,19 @@ LWRP
     sysctl "kernel.sysrq" do 
        value 1
     end
+
+    # multi value keys
+    sysctl "net.ipv4.tcp_rmem" do 
+      value "8192 87380 8388608"
+    end
+    
+    # don't write out 
+    # this will  run "sysctl -n -w kernel.sysrq=1"  every chef run
+    sysctl "kernel.sysrq" do 
+      value 1
+      save false
+    end
+
 
 Attributes
 ----------
