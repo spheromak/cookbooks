@@ -99,7 +99,8 @@ def same_entry
   # cause if we didn't then 
   if @hosts_exists 
     # we care about order here so if these things dont match force a rewrite/order
-    return @entries == @new_resource.entries
+    # make sure we are comparing the same type
+    return @entries.join(" ") == cast_entries
   end 
   false
 end
