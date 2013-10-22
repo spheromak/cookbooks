@@ -9,7 +9,7 @@ cmd = "sysctl -A"
 
 status, stdout, stderr = run_command(:command => cmd)
 return "" if stdout.nil? || stdout.empty?
-stdout.each do |line|
+stdout.each_line do |line|
   k,v = line.split(/=/).map {|i| i.strip!}
   sysctl[k] = v
 end
