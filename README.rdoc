@@ -1,5 +1,4 @@
 == OHAI
 
-some of the cookbooks i get to write 
-most things are server centric and  data heavy.  
-databags and  search are your friend.
+=== WARNING: 
+These cooks are pretty damn old, and I haven't been using them in forever. Not to mention they were mostly written when I was first learning ruby. Use at your own Peril :)
